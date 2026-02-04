@@ -6,6 +6,7 @@ ghostty-themer is a Rust CLI/TUI app that generates Ghostty terminal color theme
 
 ## Agent Guidelines
 
+- Only commit or push if I strictly tell you to do so. Never do it on your own. If you want to do it ALWAYS ask first.
 - Always use the best subagents for the job
 - When a task would benefit from a subagent, custom command, or reusable skill, suggest creating one before proceeding.
 - When committing a ticket, mark it as done in the @TICKETS.md file
