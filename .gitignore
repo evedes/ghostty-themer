@@ -1,1 +1,3 @@
 /target
+tests/fixtures/*.png
+tests/fixtures/*.txt
