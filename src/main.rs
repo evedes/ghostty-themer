@@ -2,6 +2,7 @@
 #![allow(dead_code)]
 
 mod cli;
+mod color;
 mod pipeline;
 mod theme;
 mod tui;

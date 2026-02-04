@@ -3,10 +3,12 @@ use std::path::Path;
 use anyhow::Result;
 use palette::Lab;
 
+use crate::color::Color;
+
 /// A color extracted from the image with its cluster weight.
 #[derive(Debug, Clone)]
 pub struct ExtractedColor {
-    pub lab: Lab,
+    pub color: Color,
     pub weight: f32,
 }
 
