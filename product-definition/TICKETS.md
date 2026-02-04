@@ -274,8 +274,9 @@ Wire together the full CLI flow: image → pipeline → output.
 
 ---
 
-## Ticket 10: CLI Preview Mode
+## Ticket 10: CLI Preview Mode ✅
 
+**Status**: DONE
 **Priority**: P1
 **Blocked by**: Ticket 9
 **Blocks**: —
