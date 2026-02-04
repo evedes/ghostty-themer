@@ -144,8 +144,9 @@ Determine whether the image is predominantly dark or light.
 
 ---
 
-## Ticket 6: Hue-Based Slot Assignment
+## Ticket 6: Hue-Based Slot Assignment ✅
 
+**Status**: DONE
 **Priority**: P0
 **Blocked by**: Tickets 4, 5
 **Blocks**: Tickets 7, 8
