@@ -30,9 +30,9 @@ Rename the project from `ghostty-themer` to `nuri` across the entire codebase.
 
 ---
 
-## Ticket 18: Backend Trait & Module Structure
+## Ticket 18: Backend Trait & Module Structure ✅
 
-**Status**: TODO
+**Status**: DONE
 **Priority**: P0
 **Blocked by**: 17
 **Blocks**: 19, 21, 22
