@@ -1,19 +1,13 @@
-mod cli;
-mod color;
-mod pipeline;
-mod preview;
-mod theme;
-mod tui;
-
 use anyhow::{bail, Result};
 use clap::Parser;
 
-use cli::Args;
-use pipeline::assign::assign_slots;
-use pipeline::contrast::enforce_contrast;
-use pipeline::detect::detect_mode;
-use pipeline::extract::{extract_colors, load_and_prepare};
-use theme::GhosttyTheme;
+use ghostty_themer::cli::Args;
+use ghostty_themer::pipeline::assign::assign_slots;
+use ghostty_themer::pipeline::contrast::enforce_contrast;
+use ghostty_themer::pipeline::detect::detect_mode;
+use ghostty_themer::pipeline::extract::{extract_colors, load_and_prepare};
+use ghostty_themer::theme::GhosttyTheme;
+use ghostty_themer::{preview, tui};
 
 fn main() -> Result<()> {
     let args = Args::parse();

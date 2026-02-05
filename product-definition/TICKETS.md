@@ -416,7 +416,7 @@ Harden the app against bad inputs.
 
 ---
 
-## Ticket 16: Tests
+## Ticket 16: Tests ✅ DONE
 
 **Priority**: P1
 **Blocked by**: Ticket 9
