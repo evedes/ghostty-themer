@@ -368,8 +368,9 @@ Show a simulated terminal using the generated theme.
 
 ---
 
-## Ticket 14: TUI — Color Tweaking & Save
+## Ticket 14: TUI — Color Tweaking & Save ✅
 
+**Status**: DONE
 **Priority**: P1
 **Blocked by**: Ticket 12
 **Blocks**: —

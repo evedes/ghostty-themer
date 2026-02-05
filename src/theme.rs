@@ -52,6 +52,11 @@ impl GhosttyTheme {
         Ok(config_home.join("ghostty").join("themes"))
     }
 
+    /// Resolve the full path where a theme with the given name would be installed.
+    pub fn theme_path(name: &str) -> Result<PathBuf> {
+        Ok(Self::themes_dir()?.join(name))
+    }
+
     /// Install the theme to `$XDG_CONFIG_HOME/ghostty/themes/<name>`.
     ///
     /// Creates the directory recursively if it doesn't exist.

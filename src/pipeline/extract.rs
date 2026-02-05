@@ -56,7 +56,11 @@ pub fn load_and_prepare(path: &Path) -> Result<Vec<Lab>> {
 /// Returns deduplicated colors sorted by weight (descending).
 /// Uses Hamerly's algorithm with K-means++ initialization.
 pub fn extract_colors(pixels: &[Lab], k: usize) -> Vec<ExtractedColor> {
-    let seed = 42;
+    extract_colors_with_seed(pixels, k, 42)
+}
+
+/// Run K-means with an explicit seed (for TUI regeneration).
+pub fn extract_colors_with_seed(pixels: &[Lab], k: usize, seed: u64) -> Vec<ExtractedColor> {
     let result = get_kmeans_hamerly(k, MAX_ITER, CONVERGE, false, pixels, seed);
 
     let total = pixels.len() as f32;

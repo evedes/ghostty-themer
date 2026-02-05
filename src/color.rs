@@ -121,7 +121,6 @@ impl Color {
 
     /// Adjust Oklch chroma by `delta`. Positive = more saturated, negative = less.
     /// Chroma is clamped to [0, 0.4].
-    #[allow(dead_code)]
     pub fn adjust_chroma(self, delta: f32) -> Color {
         let mut oklch = self.to_oklch();
         oklch.chroma = (oklch.chroma + delta).clamp(0.0, 0.4);
