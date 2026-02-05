@@ -1,13 +1,13 @@
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use ghostty_themer::cli::ThemeMode;
-use ghostty_themer::color::Color;
-use ghostty_themer::pipeline::assign::assign_slots;
-use ghostty_themer::pipeline::contrast::{enforce_contrast, DEFAULT_ACCENT_CONTRAST};
-use ghostty_themer::pipeline::detect::detect_mode;
-use ghostty_themer::pipeline::extract::{extract_colors, load_and_prepare};
-use ghostty_themer::theme::GhosttyTheme;
+use nuri::cli::ThemeMode;
+use nuri::color::Color;
+use nuri::pipeline::assign::assign_slots;
+use nuri::pipeline::contrast::{enforce_contrast, DEFAULT_ACCENT_CONTRAST};
+use nuri::pipeline::detect::detect_mode;
+use nuri::pipeline::extract::{extract_colors, load_and_prepare};
+use nuri::theme::GhosttyTheme;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -366,7 +366,7 @@ fn cargo_bin() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("target")
         .join("debug")
-        .join("ghostty-themer")
+        .join("nuri")
 }
 
 #[test]
@@ -417,7 +417,7 @@ fn cli_mode_flag_works() {
 fn cli_output_flag_writes_file() {
     ensure_fixtures();
     let bin = cargo_bin();
-    let tmp = std::env::temp_dir().join("ghostty-themer-test-cli-output");
+    let tmp = std::env::temp_dir().join("nuri-test-cli-output");
     std::fs::create_dir_all(&tmp).unwrap();
     let out_path = tmp.join("test-theme-out");
 
@@ -450,7 +450,7 @@ fn cli_help_output() {
 
     assert!(output.status.success());
     let stdout = String::from_utf8_lossy(&output.stdout);
-    assert!(stdout.contains("ghostty-themer"));
+    assert!(stdout.contains("nuri"));
     assert!(stdout.contains("--mode"));
     assert!(stdout.contains("--install"));
     assert!(stdout.contains("--no-clobber"));

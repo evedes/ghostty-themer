@@ -1,15 +1,17 @@
-# ghostty-themer
+# nuri
 
-Generate [Ghostty](https://ghostty.org/) terminal color themes from wallpaper images.
+> 塗り (*nuri*) — Japanese for "to paint" or "to coat"
 
-ghostty-themer extracts dominant colors from an image using K-means clustering, maps them to ANSI palette slots via perceptual hue matching, enforces WCAG contrast minimums, and outputs a ready-to-use Ghostty theme file.
+Generate color themes from wallpaper images. Currently supports [Ghostty](https://ghostty.org/) terminal themes, with Zellij and Neovim backends coming soon.
+
+nuri extracts dominant colors from an image using K-means clustering, maps them to ANSI palette slots via perceptual hue matching, enforces WCAG contrast minimums, and outputs a ready-to-use theme file.
 
 ## How it works
 
 ```
 Image → resize 256x256 → K-means (LAB, K=16) → deduplicate → detect dark/light
       → hue-based ANSI slot assignment (Oklch) → bright variants → derive special colors
-      → WCAG contrast enforcement → Ghostty theme file
+      → WCAG contrast enforcement → theme file
 ```
 
 - **K-means in LAB space** for perceptually diverse palette extraction
@@ -29,25 +31,25 @@ cargo install --path .
 
 ```bash
 # Generate theme and print to stdout
-ghostty-themer ~/wallpapers/sunset.jpg
+nuri ~/wallpapers/sunset.jpg
 
 # Preview the palette in your terminal
-ghostty-themer ~/wallpapers/sunset.jpg --preview
+nuri ~/wallpapers/sunset.jpg --preview
 
 # Install directly to Ghostty's theme directory
-ghostty-themer ~/wallpapers/sunset.jpg --name sunset --install
+nuri ~/wallpapers/sunset.jpg --name sunset --install
 
 # Write to a file
-ghostty-themer ~/wallpapers/sunset.jpg -o ~/mytheme.conf
+nuri ~/wallpapers/sunset.jpg -o ~/mytheme.conf
 
 # Force light mode
-ghostty-themer ~/wallpapers/sunset.jpg --mode light --install
+nuri ~/wallpapers/sunset.jpg --mode light --install
 ```
 
 ### TUI mode
 
 ```bash
-ghostty-themer ~/wallpapers/sunset.jpg --tui
+nuri ~/wallpapers/sunset.jpg --tui
 ```
 
 Interactive terminal UI for previewing and tweaking the generated palette before saving. Keybindings:
@@ -66,7 +68,7 @@ Interactive terminal UI for previewing and tweaking the generated palette before
 ### All options
 
 ```
-ghostty-themer [OPTIONS] <IMAGE>
+nuri [OPTIONS] <IMAGE>
 
 Arguments:
   <IMAGE>                            Path to the input image

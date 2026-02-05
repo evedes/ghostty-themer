@@ -1,13 +1,13 @@
 use anyhow::{bail, Result};
 use clap::Parser;
 
-use ghostty_themer::cli::Args;
-use ghostty_themer::pipeline::assign::assign_slots;
-use ghostty_themer::pipeline::contrast::enforce_contrast;
-use ghostty_themer::pipeline::detect::detect_mode;
-use ghostty_themer::pipeline::extract::{extract_colors, load_and_prepare};
-use ghostty_themer::theme::GhosttyTheme;
-use ghostty_themer::{preview, tui};
+use nuri::cli::Args;
+use nuri::pipeline::assign::assign_slots;
+use nuri::pipeline::contrast::enforce_contrast;
+use nuri::pipeline::detect::detect_mode;
+use nuri::pipeline::extract::{extract_colors, load_and_prepare};
+use nuri::theme::GhosttyTheme;
+use nuri::{preview, tui};
 
 fn main() -> Result<()> {
     let args = Args::parse();

@@ -2,9 +2,9 @@ use std::path::PathBuf;
 
 use clap::Parser;
 
-/// Generate Ghostty terminal color themes from wallpaper images.
+/// Generate color themes from wallpaper images.
 #[derive(Parser, Debug)]
-#[command(name = "ghostty-themer", version, about)]
+#[command(name = "nuri", version, about)]
 pub struct Args {
     /// Path to the input image
     pub image: PathBuf,

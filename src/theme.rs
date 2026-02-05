@@ -197,7 +197,7 @@ mod tests {
     #[test]
     fn write_to_creates_file() {
         let theme = GhosttyTheme::from_palette(test_palette());
-        let dir = std::env::temp_dir().join("ghostty-themer-test");
+        let dir = std::env::temp_dir().join("nuri-test");
         std::fs::create_dir_all(&dir).unwrap();
         let path = dir.join("test-theme");
 
@@ -213,7 +213,7 @@ mod tests {
     #[test]
     fn install_creates_correct_path() {
         // Override XDG_CONFIG_HOME to a temp directory
-        let temp_dir = std::env::temp_dir().join("ghostty-themer-test-install");
+        let temp_dir = std::env::temp_dir().join("nuri-test-install");
         std::env::set_var("XDG_CONFIG_HOME", &temp_dir);
 
         let theme = GhosttyTheme::from_palette(test_palette());

@@ -1,5 +1,7 @@
 # ghostty-themer — Product Requirements Document
 
+> **Note:** This project has been renamed to **nuri** (塗り — "to paint"). This document is preserved as a historical reference for Phase 1. See `PRD-2.md` for the Phase 2 evolution.
+
 ## Overview
 
 **ghostty-themer** is a CLI/TUI application that generates [Ghostty](https://ghostty.org/) terminal color themes from wallpaper images. It extracts dominant colors from an image, maps them to the 16 ANSI color slots plus special terminal colors (background, foreground, cursor, selection), enforces readability constraints, and outputs a ready-to-use Ghostty theme file.

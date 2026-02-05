@@ -1,15 +1,15 @@
-# CLAUDE.md — ghostty-themer
+# CLAUDE.md — nuri
 
 ## Project Overview
 
-ghostty-themer is a Rust CLI/TUI app that generates Ghostty terminal color themes from wallpaper images. See `product-definition/PRD.md` for full requirements and `product-definition/TICKETS.md` for implementation tickets.
+nuri (塗り — Japanese for "to paint") is a Rust CLI/TUI app that generates color themes from wallpaper images. Currently supports Ghostty terminal themes, with Zellij and Neovim backends planned. See `product-definition/PRD-1.md` for the original Ghostty-only requirements, `product-definition/PRD-2.md` for the multi-backend evolution, and `product-definition/TICKETS-2.md` for Phase 2 implementation tickets.
 
 ## Agent Guidelines
 
 - Only commit or push if I strictly tell you to do so. Never do it on your own. If you want to do it ALWAYS ask first.
 - Always use the best subagents for the job
 - When a task would benefit from a subagent, custom command, or reusable skill, suggest creating one before proceeding.
-- When committing a ticket, mark it as done in the @TICKETS.md file.
+- When committing a ticket, mark it as done in the relevant TICKETS file.
 - When committing a ticket update all the docs with the new ticket features, fixes, enhancements.
 
 
@@ -41,11 +41,13 @@ src/
     mod.rs             # TUI app loop, event handling
     widgets.rs         # Custom ratatui widgets (palette, preview)
 tests/
-  fixtures/            # Test images
-  snapshots/           # Expected theme output snapshots
+  fixtures/            # Test images (gitignored, generated programmatically)
+  snapshots/           # Expected theme output snapshots (committed)
 product-definition/
-  PRD.md               # Product requirements
-  TICKETS.md           # Implementation tickets
+  PRD-1.md             # Original product requirements (Ghostty-only)
+  PRD-2.md             # Phase 2 requirements (multi-backend: Ghostty, Zellij, Neovim)
+  TICKETS-1.md         # Phase 1 implementation tickets (all complete)
+  TICKETS-2.md         # Phase 2 implementation tickets
 ```
 
 ## Code Conventions
