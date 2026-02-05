@@ -33,16 +33,21 @@ fn main() -> Result<()> {
     // 5. Enforce WCAG contrast minimums
     enforce_contrast(&mut palette);
 
-    // 6. Build theme
+    // 6. Derive theme name
+    let name = args.name.unwrap_or_else(|| default_theme_name(&args.image));
+
+    // 7. TUI mode: launch interactive editor
+    if args.tui {
+        let tui_app = tui::TuiApp::new(palette, colors, args.image, mode, name);
+        return tui::run(tui_app);
+    }
+
+    // 8. CLI mode: build theme and output
     let theme = GhosttyTheme::from_palette(palette);
 
-    // 7. Preview (can combine with other output modes)
     if args.preview {
         preview::print_preview(&theme.palette);
     }
-
-    // 8. Output
-    let name = args.name.unwrap_or_else(|| default_theme_name(&args.image));
 
     if args.install {
         theme.install(&name)?;

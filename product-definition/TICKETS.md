@@ -296,8 +296,9 @@ Print a colored terminal preview of the generated palette when `--preview` is pa
 
 ---
 
-## Ticket 11: TUI — App Shell & Event Loop
+## Ticket 11: TUI — App Shell & Event Loop ✅
 
+**Status**: DONE
 **Priority**: P1
 **Blocked by**: Ticket 9
 **Blocks**: Tickets 12, 13, 14
