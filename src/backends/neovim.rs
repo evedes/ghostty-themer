@@ -75,6 +75,10 @@ impl ThemeBackend for NeovimBackend {
             .with_context(|| format!("failed to write theme to {}", path.display()))?;
         Ok(())
     }
+
+    fn extension(&self) -> &str {
+        ".lua"
+    }
 }
 
 /// Sanitize a theme name for Neovim: only [a-z0-9_-] allowed.
@@ -320,7 +324,7 @@ fn write_treesitter_groups(out: &mut String) {
     }
 }
 
-/// Resolve the Neovim colors directory.
+/// Resolve the Neovim plugins directory.
 fn colors_dir() -> Result<PathBuf> {
     let config_home = std::env::var("XDG_CONFIG_HOME")
         .map(PathBuf::from)
@@ -328,7 +332,7 @@ fn colors_dir() -> Result<PathBuf> {
             let home = std::env::var("HOME").unwrap_or_else(|_| "~".to_string());
             PathBuf::from(home).join(".config")
         });
-    Ok(config_home.join("nvim").join("colors"))
+    Ok(config_home.join("nvim").join("lua").join("plugins"))
 }
 
 #[cfg(test)]
@@ -495,7 +499,11 @@ mod tests {
         let palette = test_palette();
         let result = backend.install(&palette, "mytheme").unwrap();
 
-        let expected_path = temp_dir.join("nvim").join("colors").join("mytheme.lua");
+        let expected_path = temp_dir
+            .join("nvim")
+            .join("lua")
+            .join("plugins")
+            .join("mytheme.lua");
         assert_eq!(result, expected_path);
         assert!(expected_path.exists());
 

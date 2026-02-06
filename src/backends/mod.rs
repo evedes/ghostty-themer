@@ -22,6 +22,9 @@ pub trait ThemeBackend {
 
     /// Write the theme to an arbitrary path.
     fn write_to(&self, palette: &AnsiPalette, theme_name: &str, path: &Path) -> Result<()>;
+
+    /// File extension for this backend (e.g., ".kdl"), or empty string for none.
+    fn extension(&self) -> &str;
 }
 
 /// Supported output targets.

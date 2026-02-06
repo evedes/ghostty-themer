@@ -54,6 +54,10 @@ impl ThemeBackend for GhosttyBackend {
             .with_context(|| format!("failed to write theme to {}", path.display()))?;
         Ok(())
     }
+
+    fn extension(&self) -> &str {
+        ""
+    }
 }
 
 /// Resolve the Ghostty themes directory.

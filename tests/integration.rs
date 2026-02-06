@@ -648,7 +648,7 @@ fn cli_target_install_multiple() {
     // Check all three files exist
     assert!(tmp.join("ghostty/themes/dark-photo").exists());
     assert!(tmp.join("zellij/themes/dark-photo.kdl").exists());
-    assert!(tmp.join("nvim/colors/dark-photo.lua").exists());
+    assert!(tmp.join("nvim/lua/plugins/dark-photo.lua").exists());
 
     let _ = std::fs::remove_dir_all(&tmp);
 }

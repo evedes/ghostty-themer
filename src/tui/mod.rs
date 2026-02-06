@@ -1,7 +1,7 @@
 pub mod widgets;
 
 use std::io::{self, stdout};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 use anyhow::Result;
@@ -14,7 +14,7 @@ use palette::Lab;
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Clear, Paragraph};
 
-use crate::backends::{get_backend, ghostty, Target};
+use crate::backends::{get_backend, Target};
 use crate::cli::ThemeMode;
 use crate::pipeline::assign::{assign_slots, AnsiPalette};
 use crate::pipeline::contrast::{enforce_contrast, DEFAULT_ACCENT_CONTRAST};
@@ -75,7 +75,7 @@ impl TuiApp {
             dirty: false,
             status_message: None,
             input_mode: InputMode::Normal,
-            name_input_buf: theme_name,
+            name_input_buf: format!("~/{theme_name}"),
             pixels,
             k,
             seed: 42,
@@ -161,8 +161,7 @@ fn handle_name_input(app: &mut TuiApp, code: KeyCode) {
 fn handle_confirm_overwrite(app: &mut TuiApp, code: KeyCode) {
     match code {
         KeyCode::Char('y') => {
-            let name = app.name_input_buf.trim().to_string();
-            if let Err(e) = do_save(app, &name) {
+            if let Err(e) = do_save(app) {
                 app.status_message = Some(format!("Error: {e}"));
             }
             app.input_mode = InputMode::Normal;
@@ -211,7 +210,7 @@ fn handle_normal_input(app: &mut TuiApp, code: KeyCode) -> bool {
                 app.input_mode = InputMode::BackendSelect;
             } else {
                 // --target specified: skip picker, go straight to name input
-                app.name_input_buf.clone_from(&app.theme_name);
+                app.name_input_buf = format!("~/{}", app.theme_name);
                 app.input_mode = InputMode::NameInput;
             }
         }
@@ -234,7 +233,7 @@ fn handle_backend_select(app: &mut TuiApp, code: KeyCode) {
                 app.status_message = Some("Select at least one backend".to_string());
                 return;
             }
-            app.name_input_buf.clone_from(&app.theme_name);
+            app.name_input_buf = format!("~/{}", app.theme_name);
             app.input_mode = InputMode::NameInput;
         }
         KeyCode::Esc => app.input_mode = InputMode::Normal,
@@ -368,54 +367,100 @@ fn save_targets(app: &TuiApp) -> Vec<Target> {
         .collect()
 }
 
+/// Expand a leading `~` to the user's home directory.
+fn expand_tilde(path: &str) -> PathBuf {
+    if let Some(rest) = path.strip_prefix("~/") {
+        let home = std::env::var("HOME").unwrap_or_else(|_| "~".to_string());
+        PathBuf::from(home).join(rest)
+    } else if path == "~" {
+        let home = std::env::var("HOME").unwrap_or_else(|_| "~".to_string());
+        PathBuf::from(home)
+    } else {
+        PathBuf::from(path)
+    }
+}
+
+/// Compute the save path for a backend, appending its extension if needed.
+fn save_path_for_backend(base: &Path, ext: &str) -> PathBuf {
+    if ext.is_empty() {
+        return base.to_path_buf();
+    }
+    let s = base.as_os_str().to_string_lossy();
+    if s.ends_with(ext) {
+        base.to_path_buf()
+    } else {
+        let mut p = base.as_os_str().to_owned();
+        p.push(ext);
+        PathBuf::from(p)
+    }
+}
+
 fn try_save(app: &mut TuiApp) -> Result<()> {
-    let name = app.name_input_buf.trim().to_string();
-    if name.is_empty() {
-        app.status_message = Some("Theme name cannot be empty".to_string());
+    let raw_path = app.name_input_buf.trim().to_string();
+    if raw_path.is_empty() {
+        app.status_message = Some("Path cannot be empty".to_string());
         app.input_mode = InputMode::Normal;
         return Ok(());
     }
 
+    let base = expand_tilde(&raw_path);
     let targets = save_targets(app);
 
-    // Check for existing Ghostty theme (overwrite confirmation)
-    if targets.contains(&Target::Ghostty) {
-        let path = ghostty::theme_path(&name)?;
+    // Check for existing files (overwrite confirmation)
+    for target in &targets {
+        let backend = get_backend(*target);
+        let path = save_path_for_backend(&base, backend.extension());
         if path.exists() {
             app.input_mode = InputMode::ConfirmOverwrite;
             return Ok(());
         }
     }
 
-    do_save(app, &name)
+    do_save(app)
 }
 
-fn do_save(app: &mut TuiApp, name: &str) -> Result<()> {
+fn do_save(app: &mut TuiApp) -> Result<()> {
+    let raw_path = app.name_input_buf.trim().to_string();
+    let base = expand_tilde(&raw_path);
+    let theme_name = base
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .unwrap_or("theme")
+        .to_string();
     let targets = save_targets(app);
-    let mut saved_names = Vec::new();
+    let mut saved = Vec::new();
     let mut errors = Vec::new();
 
     for target in &targets {
         let backend = get_backend(*target);
-        match backend.install(&app.palette, name) {
-            Ok(_) => saved_names.push(backend.name().to_string()),
+        let path = save_path_for_backend(&base, backend.extension());
+
+        if let Some(parent) = path.parent() {
+            if let Err(e) = std::fs::create_dir_all(parent) {
+                errors.push(format!("{}: {e}", backend.name()));
+                continue;
+            }
+        }
+
+        match backend.write_to(&app.palette, &theme_name, &path) {
+            Ok(_) => saved.push(format!("{} -> {}", backend.name(), path.display())),
             Err(e) => errors.push(format!("{}: {e}", backend.name())),
         }
     }
 
-    app.theme_name = name.to_string();
+    app.theme_name = theme_name;
     app.dirty = false;
 
     if errors.is_empty() {
-        let backends_str = saved_names.join(", ");
-        app.status_message = Some(format!("Installed '{name}' for {backends_str}"));
+        let msg = saved.join(", ");
+        app.status_message = Some(format!("Saved {msg}"));
     } else {
         let err_str = errors.join("; ");
-        if saved_names.is_empty() {
+        if saved.is_empty() {
             app.status_message = Some(format!("Error: {err_str}"));
         } else {
-            let ok_str = saved_names.join(", ");
-            app.status_message = Some(format!("Installed for {ok_str}; errors: {err_str}"));
+            let ok_str = saved.join(", ");
+            app.status_message = Some(format!("Saved {ok_str}; errors: {err_str}"));
         }
     }
 
@@ -554,7 +599,7 @@ fn draw_name_input_overlay(f: &mut Frame, app: &TuiApp) {
     let area = centered_rect(50, 25, f.area());
     let lines = vec![
         Line::from(""),
-        Line::from("  Save theme as:"),
+        Line::from("  Save theme to:"),
         Line::from(""),
         Line::from(vec![
             Span::raw("  > "),
@@ -593,11 +638,11 @@ fn draw_confirm_quit_overlay(f: &mut Frame) {
     f.render_widget(popup, area);
 }
 
-fn draw_confirm_overwrite_overlay(f: &mut Frame, name: &str) {
+fn draw_confirm_overwrite_overlay(f: &mut Frame, path: &str) {
     let area = centered_rect(50, 20, f.area());
     let lines = vec![
         Line::from(""),
-        Line::from(format!("  Theme '{name}' already exists.")),
+        Line::from(format!("  '{path}' already exists.")),
         Line::from(""),
         Line::from("  Overwrite?"),
         Line::from(""),

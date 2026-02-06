@@ -70,6 +70,10 @@ impl ThemeBackend for ZellijBackend {
             .with_context(|| format!("failed to write theme to {}", path.display()))?;
         Ok(())
     }
+
+    fn extension(&self) -> &str {
+        ".kdl"
+    }
 }
 
 /// Derive the Zellij-specific "orange" color by interpolating between
