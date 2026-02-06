@@ -4,6 +4,8 @@
 
 Generate color themes from wallpaper images. Currently supports [Ghostty](https://ghostty.org/) terminal themes, with Zellij and Neovim backends coming soon.
 
+![nuri-generated theme applied to Ghostty, Zellij, and Neovim](public/assets/desktop-202602060052.png)
+
 nuri extracts dominant colors from an image using K-means clustering, maps them to ANSI palette slots via perceptual hue matching, enforces WCAG contrast minimums, and outputs a ready-to-use theme file.
 
 ## How it works
