@@ -2,7 +2,7 @@
 
 > 塗り (*nuri*) — Japanese for "to paint" or "to coat"
 
-Generate color themes from wallpaper images. Currently supports [Ghostty](https://ghostty.org/) terminal themes, with Zellij and Neovim backends coming soon.
+Generate color themes from wallpaper images. Supports [Ghostty](https://ghostty.org/), [Zellij](https://zellij.dev/), and [Neovim](https://neovim.io/) backends.
 
 ![nuri-generated theme applied to Ghostty, Zellij, and Neovim](public/assets/desktop-202602060052.png)
 
@@ -32,20 +32,24 @@ cargo install --path .
 ### CLI mode
 
 ```bash
-# Generate theme and print to stdout
+# Generate Ghostty theme and print to stdout (default)
 nuri ~/wallpapers/sunset.jpg
+
+# Target a specific backend
+nuri ~/wallpapers/sunset.jpg --target zellij
+nuri ~/wallpapers/sunset.jpg --target neovim
+
+# Install to each backend's standard config directory
+nuri ~/wallpapers/sunset.jpg --target ghostty,zellij --install
+
+# Write to a specific file
+nuri ~/wallpapers/sunset.jpg -o ~/mytheme.conf
 
 # Preview the palette in your terminal
 nuri ~/wallpapers/sunset.jpg --preview
 
-# Install directly to Ghostty's theme directory
-nuri ~/wallpapers/sunset.jpg --name sunset --install
-
-# Write to a file
-nuri ~/wallpapers/sunset.jpg -o ~/mytheme.conf
-
 # Force light mode
-nuri ~/wallpapers/sunset.jpg --mode light --install
+nuri ~/wallpapers/sunset.jpg --mode light
 ```
 
 ### TUI mode
@@ -60,9 +64,11 @@ Interactive terminal UI for previewing and tweaking the generated palette before
 |-----|--------|
 | `d` / `l` | Toggle dark/light mode |
 | `r` | Regenerate palette (new K-means seed) |
+| `Tab` / `Shift+Tab` | Cycle through palette slots |
 | `1`-`6` | Select accent slot |
-| `+` / `-` | Adjust lightness |
-| `s` / `S` | Adjust chroma |
+| `+` / `-` | Adjust lightness (selected slot) |
+| `s` / `S` | Adjust chroma (selected slot) |
+| `Left` / `Right` | Cycle extracted colors (selected slot) |
 | `Enter` | Save theme |
 | `q` | Quit |
 | `?` | Help |
@@ -78,8 +84,10 @@ Arguments:
 Options:
   -n, --name <NAME>                  Theme name (defaults to image filename)
   -m, --mode <MODE>                  Force dark or light [values: dark, light]
+  -t, --target <TARGET>              Backend(s), comma-separated [values: ghostty, zellij, neovim]
   -o, --output <OUTPUT>              Write theme to file instead of stdout
-      --install                      Install to ~/.config/ghostty/themes/
+      --install                      Install to each backend's standard config directory
+      --no-clobber                   Error instead of overwriting existing themes
       --preview                      Print colored palette preview
       --tui                          Launch interactive TUI
   -k, --colors <N>                   K-means clusters [default: 16]

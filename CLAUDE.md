@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-nuri (塗り — Japanese for "to paint") is a Rust CLI/TUI app that generates color themes from wallpaper images. Currently supports Ghostty terminal themes, with Zellij and Neovim backends planned. See `product-definition/PRD-1.md` for the original Ghostty-only requirements, `product-definition/PRD-2.md` for the multi-backend evolution, and `product-definition/TICKETS-2.md` for Phase 2 implementation tickets.
+nuri (塗り — Japanese for "to paint") is a Rust CLI/TUI app that generates color themes from wallpaper images. Supports Ghostty, Zellij, and Neovim backends. See `product-definition/PRD-1.md` for the original Ghostty-only requirements, `product-definition/PRD-2.md` for the multi-backend evolution, and `product-definition/TICKETS-2.md` for Phase 2 implementation tickets.
 
 ## Agent Guidelines
 
@@ -19,7 +19,7 @@ nuri (塗り — Japanese for "to paint") is a Rust CLI/TUI app that generates c
 cargo build                                  # Build
 cargo run -- <image> [opts]                  # Run CLI mode (default: ghostty)
 cargo run -- <image> --target zellij         # Output Zellij theme
-cargo run -- <image> --target ghostty,zellij --install  # Install multiple
+cargo run -- <image> --target ghostty,zellij --install  # Install to standard dirs
 cargo run -- <image> --tui                   # Run TUI mode
 cargo test                   # Run all tests
 cargo clippy                 # Lint
@@ -40,9 +40,9 @@ src/
     contrast.rs        # WCAG contrast enforcement
   backends/
     mod.rs             # ThemeBackend trait, Target enum, get_backend()
-    ghostty.rs         # Ghostty theme backend (serialize, install)
-    zellij.rs          # Zellij theme backend (stub)
-    neovim.rs          # Neovim colorscheme backend (stub)
+    ghostty.rs         # Ghostty theme backend (serialize, write, install)
+    zellij.rs          # Zellij theme backend (KDL format)
+    neovim.rs          # Neovim colorscheme backend (Lua format)
   tui/
     mod.rs             # TUI app loop, event handling
     widgets.rs         # Custom ratatui widgets (palette, preview)
