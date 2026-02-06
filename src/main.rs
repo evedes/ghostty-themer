@@ -60,8 +60,13 @@ fn main() -> Result<()> {
     }
 
     // 8. CLI mode: build theme and output
-    let backends: Vec<Box<dyn ThemeBackend>> =
-        args.target.iter().map(|t| get_backend(*t)).collect();
+    // Default to Ghostty when no --target specified in CLI mode
+    let targets = if args.target.is_empty() {
+        vec![Target::Ghostty]
+    } else {
+        args.target.clone()
+    };
+    let backends: Vec<Box<dyn ThemeBackend>> = targets.iter().map(|t| get_backend(*t)).collect();
 
     if args.preview {
         preview::print_preview(&palette);
@@ -69,7 +74,7 @@ fn main() -> Result<()> {
 
     if args.install {
         // Check --no-clobber for Ghostty targets
-        if args.no_clobber && args.target.contains(&Target::Ghostty) {
+        if args.no_clobber && targets.contains(&Target::Ghostty) {
             let theme_path = ghostty::theme_path(&name)?;
             if theme_path.exists() {
                 bail!(

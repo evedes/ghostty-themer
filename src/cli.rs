@@ -24,13 +24,7 @@ pub struct Args {
     pub output: Option<PathBuf>,
 
     /// Target theme format(s), comma-separated (e.g. ghostty,zellij)
-    #[arg(
-        short = 't',
-        long,
-        value_enum,
-        value_delimiter = ',',
-        default_value = "ghostty"
-    )]
+    #[arg(short = 't', long, value_enum, value_delimiter = ',')]
     pub target: Vec<Target>,
 
     /// Install theme to the target's standard config directory
