@@ -163,9 +163,9 @@ Implement the Zellij theme backend that outputs KDL format.
 
 ---
 
-## Ticket 22: Neovim Backend
+## Ticket 22: Neovim Backend ✅
 
-**Status**: TODO
+**Status**: DONE
 **Priority**: P1
 **Blocked by**: 18
 **Blocks**: 23, 24
