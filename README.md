@@ -1,12 +1,17 @@
-# nuri
+# NURI
 
 > 塗り (*nuri*) — Japanese for "to paint" or "to coat"
 
 Generate color themes from wallpaper images. Supports [Ghostty](https://ghostty.org/), [Zellij](https://zellij.dev/), and [Neovim](https://neovim.io/) backends.
 
+
 ![nuri-generated theme applied to Ghostty, Zellij, and Neovim](public/assets/desktop-202602060052.png)
 
 nuri extracts dominant colors from an image using K-means clustering, maps them to ANSI palette slots via perceptual hue matching, enforces WCAG contrast minimums, and outputs a ready-to-use theme file.
+
+## Examples
+
+See [EXAMPLES.md](EXAMPLES.md) for more screenshots of nuri-generated themes in action.
 
 ## How it works
 
@@ -115,6 +120,7 @@ cargo fmt --check            # Check formatting
 | [ratatui](https://crates.io/crates/ratatui) | Terminal UI framework |
 | [crossterm](https://crates.io/crates/crossterm) | Terminal backend for ratatui |
 | [anyhow](https://crates.io/crates/anyhow) | Error handling |
+
 
 ## License
 
