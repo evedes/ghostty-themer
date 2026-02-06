@@ -16,9 +16,11 @@ nuri (塗り — Japanese for "to paint") is a Rust CLI/TUI app that generates c
 ## Build & Run
 
 ```bash
-cargo build                  # Build
-cargo run -- <image> [opts]  # Run CLI mode
-cargo run -- <image> --tui   # Run TUI mode
+cargo build                                  # Build
+cargo run -- <image> [opts]                  # Run CLI mode (default: ghostty)
+cargo run -- <image> --target zellij         # Output Zellij theme
+cargo run -- <image> --target ghostty,zellij --install  # Install multiple
+cargo run -- <image> --tui                   # Run TUI mode
 cargo test                   # Run all tests
 cargo clippy                 # Lint
 cargo fmt --check            # Check formatting

@@ -2,6 +2,8 @@ use std::path::PathBuf;
 
 use clap::Parser;
 
+use crate::backends::Target;
+
 /// Generate color themes from wallpaper images.
 #[derive(Parser, Debug)]
 #[command(name = "nuri", version, about)]
@@ -21,7 +23,17 @@ pub struct Args {
     #[arg(short, long)]
     pub output: Option<PathBuf>,
 
-    /// Install theme to ~/.config/ghostty/themes/
+    /// Target theme format(s), comma-separated (e.g. ghostty,zellij)
+    #[arg(
+        short = 't',
+        long,
+        value_enum,
+        value_delimiter = ',',
+        default_value = "ghostty"
+    )]
+    pub target: Vec<Target>,
+
+    /// Install theme to the target's standard config directory
     #[arg(long, conflicts_with = "output")]
     pub install: bool,
 

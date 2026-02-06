@@ -86,9 +86,9 @@ Move the existing Ghostty serialization logic from `src/theme.rs` into the new b
 
 ---
 
-## Ticket 20: CLI `--target` Flag & Multi-Backend Dispatch
+## Ticket 20: CLI `--target` Flag & Multi-Backend Dispatch ✅
 
-**Status**: TODO
+**Status**: DONE
 **Priority**: P0
 **Blocked by**: 19
 **Blocks**: 23, 24

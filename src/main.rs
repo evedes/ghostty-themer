@@ -1,8 +1,7 @@
 use anyhow::{bail, Result};
 use clap::Parser;
 
-use nuri::backends::ghostty::{self, GhosttyBackend};
-use nuri::backends::ThemeBackend;
+use nuri::backends::{get_backend, ghostty, Target, ThemeBackend};
 use nuri::cli::Args;
 use nuri::pipeline::assign::assign_slots;
 use nuri::pipeline::contrast::enforce_contrast;
@@ -59,15 +58,16 @@ fn main() -> Result<()> {
     }
 
     // 8. CLI mode: build theme and output
-    let backend = GhosttyBackend;
+    let backends: Vec<Box<dyn ThemeBackend>> =
+        args.target.iter().map(|t| get_backend(*t)).collect();
 
     if args.preview {
         preview::print_preview(&palette);
     }
 
     if args.install {
-        // Check --no-clobber
-        if args.no_clobber {
+        // Check --no-clobber for Ghostty targets
+        if args.no_clobber && args.target.contains(&Target::Ghostty) {
             let theme_path = ghostty::theme_path(&name)?;
             if theme_path.exists() {
                 bail!(
@@ -77,13 +77,27 @@ fn main() -> Result<()> {
                 );
             }
         }
-        let installed_path = backend.install(&palette, &name)?;
-        eprintln!("Installed theme '{name}' to {}", installed_path.display());
+        for backend in &backends {
+            let installed_path = backend.install(&palette, &name)?;
+            eprintln!(
+                "Installed {} theme '{name}' to {}",
+                backend.name(),
+                installed_path.display()
+            );
+        }
     } else if let Some(ref path) = args.output {
-        backend.write_to(&palette, &name, path)?;
+        if backends.len() > 1 {
+            bail!("cannot use --output with multiple targets; use --install instead");
+        }
+        backends[0].write_to(&palette, &name, path)?;
         eprintln!("Wrote theme to {}", path.display());
     } else {
-        print!("{}", backend.serialize(&palette, &name));
+        if backends.len() > 1 {
+            bail!(
+                "cannot output multiple targets to stdout; use --install or specify a single --target"
+            );
+        }
+        print!("{}", backends[0].serialize(&palette, &name));
     }
 
     Ok(())
