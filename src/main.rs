@@ -52,8 +52,10 @@ fn main() -> Result<()> {
 
     // 7. TUI mode: launch interactive editor
     if args.tui {
-        let tui_app =
+        let targets = args.target.clone();
+        let mut tui_app =
             tui::TuiApp::new(palette, colors, args.image, mode, name, pixels, args.colors);
+        tui_app.set_targets(targets);
         return tui::run(tui_app);
     }
 

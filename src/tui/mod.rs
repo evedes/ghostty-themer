@@ -14,8 +14,7 @@ use palette::Lab;
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Clear, Paragraph};
 
-use crate::backends::ghostty::{self, GhosttyBackend};
-use crate::backends::ThemeBackend;
+use crate::backends::{get_backend, ghostty, Target};
 use crate::cli::ThemeMode;
 use crate::pipeline::assign::{assign_slots, AnsiPalette};
 use crate::pipeline::contrast::{enforce_contrast, DEFAULT_ACCENT_CONTRAST};
@@ -27,6 +26,7 @@ use self::widgets::{PaletteWidget, PreviewWidget};
 #[derive(Debug, Clone, PartialEq, Eq)]
 enum InputMode {
     Normal,
+    BackendSelect,
     NameInput,
     ConfirmQuit,
     ConfirmOverwrite,
@@ -48,6 +48,10 @@ pub struct TuiApp {
     pixels: Vec<Lab>,
     k: usize,
     seed: u64,
+    /// Targets passed via --target CLI flag (empty = show picker).
+    cli_targets: Vec<Target>,
+    /// Backend selection state for the picker popup.
+    selected_backends: [bool; 3],
 }
 
 impl TuiApp {
@@ -75,7 +79,14 @@ impl TuiApp {
             pixels,
             k,
             seed: 42,
+            cli_targets: Vec::new(),
+            selected_backends: [true, false, false],
         }
+    }
+
+    /// Set targets from the CLI --target flag.
+    pub fn set_targets(&mut self, targets: Vec<Target>) {
+        self.cli_targets = targets;
     }
 }
 
@@ -107,6 +118,9 @@ fn run_event_loop(
             if let Event::Key(key) = event::read()? {
                 if key.kind == KeyEventKind::Press {
                     match app.input_mode {
+                        InputMode::BackendSelect => {
+                            handle_backend_select(app, key.code);
+                        }
                         InputMode::NameInput => handle_name_input(app, key.code),
                         InputMode::ConfirmQuit => match key.code {
                             KeyCode::Char('y') => return Ok(()),
@@ -191,12 +205,41 @@ fn handle_normal_input(app: &mut TuiApp, code: KeyCode) -> bool {
         KeyCode::Left => cycle_candidate(app, false),
         KeyCode::Right => cycle_candidate(app, true),
         KeyCode::Enter => {
-            app.name_input_buf.clone_from(&app.theme_name);
-            app.input_mode = InputMode::NameInput;
+            if app.cli_targets.is_empty() {
+                // No --target specified: show backend picker
+                app.selected_backends = [true, false, false];
+                app.input_mode = InputMode::BackendSelect;
+            } else {
+                // --target specified: skip picker, go straight to name input
+                app.name_input_buf.clone_from(&app.theme_name);
+                app.input_mode = InputMode::NameInput;
+            }
         }
         _ => {}
     }
     false
+}
+
+fn handle_backend_select(app: &mut TuiApp, code: KeyCode) {
+    match code {
+        KeyCode::Char('g') => app.selected_backends[0] = !app.selected_backends[0],
+        KeyCode::Char('z') => app.selected_backends[1] = !app.selected_backends[1],
+        KeyCode::Char('n') => app.selected_backends[2] = !app.selected_backends[2],
+        KeyCode::Char('a') => {
+            let all_selected = app.selected_backends.iter().all(|&b| b);
+            app.selected_backends = [!all_selected; 3];
+        }
+        KeyCode::Enter => {
+            if !app.selected_backends.iter().any(|&b| b) {
+                app.status_message = Some("Select at least one backend".to_string());
+                return;
+            }
+            app.name_input_buf.clone_from(&app.theme_name);
+            app.input_mode = InputMode::NameInput;
+        }
+        KeyCode::Esc => app.input_mode = InputMode::Normal,
+        _ => {}
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -311,6 +354,20 @@ fn recompute_after_tweak(app: &mut TuiApp) {
 // Save helpers
 // ---------------------------------------------------------------------------
 
+/// Get the effective targets for saving.
+fn save_targets(app: &TuiApp) -> Vec<Target> {
+    if !app.cli_targets.is_empty() {
+        return app.cli_targets.clone();
+    }
+    let all_targets = [Target::Ghostty, Target::Zellij, Target::Neovim];
+    all_targets
+        .iter()
+        .zip(app.selected_backends.iter())
+        .filter(|(_, &selected)| selected)
+        .map(|(&t, _)| t)
+        .collect()
+}
+
 fn try_save(app: &mut TuiApp) -> Result<()> {
     let name = app.name_input_buf.trim().to_string();
     if name.is_empty() {
@@ -319,21 +376,49 @@ fn try_save(app: &mut TuiApp) -> Result<()> {
         return Ok(());
     }
 
-    let path = ghostty::theme_path(&name)?;
-    if path.exists() {
-        app.input_mode = InputMode::ConfirmOverwrite;
-        return Ok(());
+    let targets = save_targets(app);
+
+    // Check for existing Ghostty theme (overwrite confirmation)
+    if targets.contains(&Target::Ghostty) {
+        let path = ghostty::theme_path(&name)?;
+        if path.exists() {
+            app.input_mode = InputMode::ConfirmOverwrite;
+            return Ok(());
+        }
     }
 
     do_save(app, &name)
 }
 
 fn do_save(app: &mut TuiApp, name: &str) -> Result<()> {
-    let backend = GhosttyBackend;
-    backend.install(&app.palette, name)?;
+    let targets = save_targets(app);
+    let mut saved_names = Vec::new();
+    let mut errors = Vec::new();
+
+    for target in &targets {
+        let backend = get_backend(*target);
+        match backend.install(&app.palette, name) {
+            Ok(_) => saved_names.push(backend.name().to_string()),
+            Err(e) => errors.push(format!("{}: {e}", backend.name())),
+        }
+    }
+
     app.theme_name = name.to_string();
     app.dirty = false;
-    app.status_message = Some(format!("Saved theme '{name}'"));
+
+    if errors.is_empty() {
+        let backends_str = saved_names.join(", ");
+        app.status_message = Some(format!("Installed '{name}' for {backends_str}"));
+    } else {
+        let err_str = errors.join("; ");
+        if saved_names.is_empty() {
+            app.status_message = Some(format!("Error: {err_str}"));
+        } else {
+            let ok_str = saved_names.join(", ");
+            app.status_message = Some(format!("Installed for {ok_str}; errors: {err_str}"));
+        }
+    }
+
     Ok(())
 }
 
@@ -369,6 +454,7 @@ fn draw(f: &mut Frame, app: &TuiApp) {
                 draw_help_overlay(f);
             }
         }
+        InputMode::BackendSelect => draw_backend_select_overlay(f, app),
         InputMode::NameInput => draw_name_input_overlay(f, app),
         InputMode::ConfirmQuit => draw_confirm_quit_overlay(f),
         InputMode::ConfirmOverwrite => {
@@ -519,6 +605,42 @@ fn draw_confirm_overwrite_overlay(f: &mut Frame, name: &str) {
     ];
     let popup = Paragraph::new(lines)
         .block(Block::bordered().title(" Confirm Overwrite "))
+        .style(Style::default().bg(Color::Black).fg(Color::White));
+    f.render_widget(Clear, area);
+    f.render_widget(popup, area);
+}
+
+fn draw_backend_select_overlay(f: &mut Frame, app: &TuiApp) {
+    let area = centered_rect(50, 30, f.area());
+    let labels = ["Ghostty", "Zellij", "Neovim"];
+    let keys = ['G', 'Z', 'N'];
+    let mut lines = vec![
+        Line::from(""),
+        Line::from("  Select backends to save:"),
+        Line::from(""),
+    ];
+    for (i, (label, key)) in labels.iter().zip(keys.iter()).enumerate() {
+        let marker = if app.selected_backends[i] {
+            "[x]"
+        } else {
+            "[ ]"
+        };
+        let style = if app.selected_backends[i] {
+            Style::default()
+                .fg(Color::Green)
+                .add_modifier(Modifier::BOLD)
+        } else {
+            Style::default().fg(Color::DarkGray)
+        };
+        lines.push(Line::from(vec![
+            Span::raw("  "),
+            Span::styled(format!("{marker} [{key}] {label}"), style),
+        ]));
+    }
+    lines.push(Line::from(""));
+    lines.push(Line::from("  a: Toggle all | Enter: Confirm | Esc: Cancel"));
+    let popup = Paragraph::new(lines)
+        .block(Block::bordered().title(" Save Target "))
         .style(Style::default().bg(Color::Black).fg(Color::White));
     f.render_widget(Clear, area);
     f.render_widget(popup, area);

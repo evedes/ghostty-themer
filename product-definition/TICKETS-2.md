@@ -206,9 +206,9 @@ Implement the Neovim colorscheme backend that outputs a Lua file.
 
 ---
 
-## Ticket 23: TUI Backend Selection
+## Ticket 23: TUI Backend Selection ✅
 
-**Status**: TODO
+**Status**: DONE
 **Priority**: P1
 **Blocked by**: 19, 20, 21, 22
 **Blocks**: 24
