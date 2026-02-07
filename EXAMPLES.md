@@ -17,3 +17,11 @@ Source: a sunset gradient wallpaper. nuri auto-detected dark mode and produced w
 Source: a dense foliage wallpaper. nuri pulled deep greens and teals, with high-contrast foreground text against a dark background.
 
 ![Forest green theme applied to Ghostty, Zellij, and Neovim](public/assets/desktop-202602062258.png)
+
+---
+
+## Dark fantasy
+
+Source: a dark fantasy wallpaper. nuri extracted deep blues and teals, pairing them with soft cyan accents and crisp foreground text for a calm, focused workspace.
+
+![Dark fantasy theme applied to Ghostty, Zellij, and Neovim](public/assets/desktop-202602070110.png)
